@@ -1,6 +1,6 @@
 # 🌴 travel-shiori (旅のしおり作成ツール)
 
-Obsidian 等で書き溜めた旅行計画（Markdown）を、家族がワクワクするような「美しく機能的な印刷用しおり」へとブラウザ上で自動変換するツールです。
+Markdown形式の旅行計画を「美しく機能的な印刷用しおり」へとブラウザ上で自動変換するツールです。
 
 https://naosim.github.io/travel-shiori/generator.html
 
@@ -31,6 +31,8 @@ https://naosim.github.io/travel-shiori/generator.html
 | **4** | **内面：中** | **内面：中央パネル** | 見開きの中心（メイン内容） |
 | **5** | **内面：右** | **内面：右パネル** | 見開きの右端（最終日/持ち物など） |
 | **6** | **裏表紙** | **外面：中央パネル** | 折り畳んだ時に背面にくる面（連絡先など） |
+
+![画像](./docs/paper.png)
 
 ### 📝 記述ルール
 - **デザイン・カスタマイズ (YAMLフロントマター)**: Markdown の冒頭を `---` で囲むことで、デザインを微調整できます。
@@ -72,8 +74,6 @@ https://naosim.github.io/travel-shiori/generator.html
 | :--- | :--- | :--- |
 | スケジュール (Day 1) | スケジュール (Day 2) | スケジュール (Day 3) |
 
-### 実際の出力イメージ
-![画像](./docs/image.png)
 ---
 
 ## 🚀 使い方とワークフロー (Workflow)
@@ -100,7 +100,6 @@ https://naosim.github.io/travel-shiori/generator.html
 
 ## 📁 ディレクトリ構造
 - `docs/`: GitHub Pages 公開用。`generator.html` だけで全ての機能が動作します。
-- `spec/`: サンプルデータ、レイアウトガイドを格納。
 
 ---
 
