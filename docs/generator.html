@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🌴 旅のしおり Generator | Premium Tri-fold Creator</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&family=Noto+Sans+JP:wght@400;500;700&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --paper-width: 297mm;
+      --paper-height: 210mm;
+      --col-width: 99mm;
+      --accent-color: #2c3e50;
+      --bg-ui: #f4f7f6;
+      /* Configurable variables */
+      --title-size: 32pt;
+      --subtitle-size: 14pt;
+      --title-color: #000000;
+      --row-spacing: 8px;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    /* UI Styles (Not for Print) */
+    body {
+      margin: 0;
+      background: var(--bg-ui);
+      font-family: 'Noto Sans JP', sans-serif;
+      overflow-x: hidden;
+    }
+
+    .ui-container {
+      display: flex;
+      height: 100vh;
+      width: 100vw;
+    }
+
+    .editor-pane {
+      width: 400px;
+      background: #fff;
+      border-right: 1px solid #ddd;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+      z-index: 100;
+    }
+
+    .preview-pane {
+      flex: 1;
+      overflow-y: auto;
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #e0e6e4;
+      scroll-behavior: smooth;
+    }
+
+    h1.ui-title {
+      font-size: 1.2rem;
+      margin: 0 0 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--accent-color);
+    }
+
+    textarea#markdown-input {
+      flex: 1;
+      width: 100%;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 15px;
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      resize: none;
+      outline: none;
+      transition: border-color 0.2s;
+      background: #fafafa;
+    }
+
+    textarea#markdown-input:focus {
+      border-color: var(--accent-color);
+      background: #fff;
+    }
+
+    .toolbar {
+      margin-top: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .btn {
+      padding: 12px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: var(--accent-color);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+
+    .btn-outline {
+      background: #fff;
+      border: 1px solid #ddd;
+      color: #666;
+    }
+
+    .btn-outline:hover {
+      background: #f9f9f9;
+    }
+
+    /* Shiori Layout (Preview & Print) */
+    .shiori-page {
+      width: var(--paper-width);
+      height: var(--paper-height);
+      background: #fff;
+      display: flex;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+      margin-bottom: 40px;
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .column {
+      width: var(--col-width);
+      height: 100%;
+      padding: 12mm 10mm;
+      border-right: 0.2pt dotted #ddd;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .column:last-child {
+      border-right: none;
+    }
+
+    /* Content Typography */
+    .column h2 {
+      font-size: 14pt;
+      border-bottom: 1.5pt solid #000;
+      padding-bottom: 3px;
+      margin: 15px 0 10px;
+      font-weight: 700;
+    }
+
+    .column h3 {
+      font-size: 10.5pt;
+      margin: 12px 0 6px;
+      color: #333;
+      font-weight: 700;
+    }
+
+    .column p,
+    .column div {
+      line-height: 1.6;
+      margin-bottom: 6px;
+    }
+
+    /* Cover Page Specific */
+    .cover-align {
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+
+    .cover-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: var(--title-size);
+      font-weight: 700;
+      border: 2pt solid #000;
+      border-radius: 6px;
+      padding: 15px 25px;
+      margin-bottom: 20px;
+      line-height: 1.1;
+      color: var(--title-color);
+    }
+
+    .cover-subtitle {
+      font-family: 'Outfit';
+      font-size: var(--subtitle-size);
+      color: #555;
+    }
+
+    .cover-image {
+      width: 100%;
+      max-height: 60mm;
+      background: #f0f0f0;
+      border: 1px dashed #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #999;
+      font-size: 9pt;
+      margin: 20px 0;
+    }
+
+    /* Timeline Table Component */
+    .timeline-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0;
+    }
+
+    .timeline-axis {
+      width: 25px;
+      /* border-right は廃止し、疑似要素で線を引く */
+      position: relative;
+      padding: 0;
+      vertical-align: middle;
+    }
+
+    /* 垂直線の描画 */
+    .timeline-axis::before {
+      content: '';
+      position: absolute;
+      right: -0.75pt;
+      top: 0;
+      bottom: 0;
+      width: 1.5pt;
+      background: #000;
+      z-index: 1;
+    }
+
+    /* 1行目は丸（中央）から下だけに線を出す */
+    .timeline-table tr:first-child .timeline-axis::before {
+      top: 56%;
+      /* イベントの丸印のtopと合わせる */
+    }
+
+    /* 最終行は上から丸（中央）までで線を止める */
+    .timeline-table tr:last-child .timeline-axis::before {
+      bottom: 44%;
+      /* 100% - 56% = 44% */
+    }
+
+    /* イベントの丸印 */
+    .event-row .timeline-axis::after {
+      content: '';
+      position: absolute;
+      right: -0.75pt;
+      /* 境界線の真上に配置 (太さ1.5ptの半分) */
+      top: 56%;
+      width: 9px;
+      height: 9px;
+      background: #fff;
+      border: 1.5pt solid #000;
+      border-radius: 50%;
+      transform: translate(50%, -50%);
+      /* 中心を軸にぴったり合わせる */
+      z-index: 2;
+    }
+
+    .timeline-time {
+      width: 55px;
+      /* 時刻カラムの幅を固定 */
+      padding: var(--row-spacing) 5px var(--row-spacing) 10px;
+      font-family: 'Outfit';
+      font-weight: 700;
+      font-size: 10.5pt;
+      vertical-align: top;
+      white-space: nowrap;
+      line-height: 1.4;
+    }
+
+    .timeline-content {
+      padding: var(--row-spacing) 0 var(--row-spacing) 10px;
+      vertical-align: top;
+      text-align: left;
+      font-size: 9.5pt;
+      line-height: 1.4;
+    }
+
+    /* メモ行（ネスト項目）は行間をさらに詰める */
+    .memo-row .timeline-content {
+      padding-top: 0;
+      padding-bottom: 3px;
+    }
+
+    .memo-row .timeline-time {
+      padding-top: 0;
+      padding-bottom: 3px;
+    }
+
+    .memo-text {
+      font-size: 8.5pt;
+      color: #444;
+      display: block;
+    }
+
+    .interval-text {
+      font-size: 8pt;
+      color: #333;
+      padding: 4px 0 4px 15px;
+      position: relative;
+    }
+
+    .interval-text::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      width: 10px;
+      height: 0.5pt;
+      background: #000;
+    }
+
+    /* Checkbox Component */
+    .check-item {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 6px;
+      font-size: 9.5pt;
+    }
+
+    .sq {
+      width: 13px;
+      height: 13px;
+      border: 1.2pt solid #333;
+      margin-right: 10px;
+      margin-top: 3px;
+      flex-shrink: 0;
+    }
+
+    /* Callout Box */
+    .tip-box {
+      border: 0.8pt solid #000;
+      border-radius: 4px;
+      padding: 12px;
+      margin: 10px 0;
+      background: #fff;
+      font-size: 8.8pt;
+      line-height: 1.5;
+    }
+
+    .tip-box strong {
+      display: block;
+      margin-bottom: 4px;
+      border-bottom: 0.5pt solid #eee;
+    }
+
+    /* Empty Panel Placeholder */
+    .empty-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      border: 0.5pt dashed #eee;
+      padding: 10px;
+      color: #ccc;
+      font-size: 8pt;
+    }
+
+    /* Print Overrides */
+    @media print {
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        height: auto;
+        overflow: visible;
+      }
+
+      .ui-container {
+        display: block;
+        height: auto;
+        width: auto;
+      }
+
+      .editor-pane {
+        display: none;
+      }
+
+      .preview-pane {
+        padding: 0;
+        margin: 0;
+        background: none;
+        display: block;
+        overflow: visible;
+        height: auto;
+        width: auto;
+      }
+
+      .shiori-page {
+        margin: 0;
+        box-shadow: none;
+        page-break-after: always;
+        overflow: hidden;
+      }
+
+      .column {
+        border-right-color: #eee;
+      }
+
+      @page {
+        size: A4 landscape;
+        margin: 0;
+      }
+    }
+
+    /* Helper Classes */
+    .flex-center {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="ui-container">
+    <!-- Sidebar Editor -->
+    <aside class="editor-pane">
+      <h1 class="ui-title">🌴 旅のしおり Generator</h1>
+
+      <div style="margin-bottom: 10px; font-size: 12px; color: #666;">
+        Markdown 形式で入力（<code>---</code> で区切り）
+      </div>
+
+      <textarea id="markdown-input" placeholder="旅のプランを入力してください..."></textarea>
+
+      <div class="toolbar">
+        <button class="btn btn-primary" onclick="window.print()">
+          <span>🖨️ しおりを印刷 / PDF保存</span>
+        </button>
+        <label class="btn btn-outline" for="file-upload">
+          <span>📂 Markdownを読み込む</span>
+          <input type="file" id="file-upload" accept=".md" style="display:none" onchange="handleFileUpload(this)">
+        </label>
+        <button class="btn btn-outline" onclick="loadSample()">
+          <span>📝 サンプルを読み込む</span>
+        </button>
+      </div>
+
+      <div style="margin-top: 20px; font-size: 11px; color: #999; line-height: 1.4;">
+        ※ セクション順: 1.表紙 / 2.内フラップ / 3.見開き左 / 4.見開き中 / 5.見開き右 / 6.裏表紙<br>
+        ※ 横書き・左開きに最適化したレイアウトです。
+      </div>
+    </aside>
+
+    <!-- Live Preview Area -->
+    <main class="preview-pane" id="preview-area">
+      <!-- Page 1: Outer (6, 5, 1) -->
+      <div class="shiori-page" id="page-outer">
+        <div class="column" id="panel-6"></div> <!-- Inner Flap -->
+        <div class="column" id="panel-5"></div> <!-- Back Cover -->
+        <div class="column cover-align" id="panel-1"></div> <!-- Main Cover -->
+      </div>
+
+      <!-- Page 2: Inner (2, 3, 4) -->
+      <div class="shiori-page" id="page-inner">
+        <div class="column" id="panel-2"></div> <!-- Day 1 -->
+        <div class="column" id="panel-3"></div> <!-- Day 2 -->
+        <div class="column" id="panel-4"></div> <!-- Day 3 / Packing -->
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const input = document.getElementById('markdown-input');
+
+    // 初期化
+    input.addEventListener('input', updatePreview);
+
+    function updatePreview() {
+      const rawValue = input.value;
+      let text = rawValue;
+      let config = {};
+
+      // YAML Frontmatter 解析
+      const yamlMatch = rawValue.match(/^---\n([\s\S]+?)\n---/);
+      if (yamlMatch) {
+        const yaml = yamlMatch[1];
+        yaml.split('\n').forEach(line => {
+          const parts = line.split(':');
+          if (parts.length >= 2) {
+            config[parts[0].trim()] = parts[1].trim();
+          }
+        });
+        text = rawValue.replace(yamlMatch[0], '').trim();
+        applyConfig(config);
+      } else {
+        // 重複呼び出し防止のためデフォルト値をセット
+        applyConfig({ titleSize: '32pt', subtitleSize: '14pt', spacing: '8px', titleColor: '#000000' });
+      }
+
+      const sections = text.split(/\n---\s*\n/);
+      // マッピング: 1.表紙, 2.内フラップ(P6), 3.内左(P2), 4.内中(P3), 5.内右(P4), 6.裏表紙(P5)
+      const panelMapping = [1, 6, 2, 3, 4, 5];
+
+      for (let i = 0; i < 6; i++) {
+        const panelId = panelMapping[i];
+        const panel = document.getElementById(`panel-${panelId}`);
+        const content = sections[i] || '';
+        panel.innerHTML = renderMarkdown(content.trim(), panelId === 1);
+      }
+    }
+
+    function applyConfig(config) {
+      const root = document.documentElement;
+      if (config.titleSize) root.style.setProperty('--title-size', config.titleSize);
+      if (config.subtitleSize) root.style.setProperty('--subtitle-size', config.subtitleSize);
+      if (config.spacing) root.style.setProperty('--row-spacing', config.spacing);
+      if (config.titleColor) root.style.setProperty('--title-color', config.titleColor);
+    }
+
+    function renderMarkdown(text, isCover = false) {
+      if (!text) return '<div class="empty-panel">🗒️ メモ欄</div>';
+
+      const lines = text.split('\n');
+      let html = '';
+      let inTimeline = false;
+      let inTip = false;
+
+      lines.forEach((line, index) => {
+        const trimmed = line.trim();
+
+        // 1. Cover Mode (Special Header Processing)
+        if (isCover) {
+          if (trimmed.startsWith('# ')) {
+            html += `<div class="cover-title">${trimmed.replace('# ', '')}</div>`;
+            return;
+          }
+          if (trimmed.startsWith('![[')) {
+            html += `<div class="cover-image">🖼️ Cover Image</div>`;
+            return;
+          }
+          if (trimmed) {
+            // タイトル以外のすべての非空行をサブタイトルとして扱う
+            html += `<div class="cover-subtitle">${trimmed.replace(/^#+\s/, '')}</div>`;
+            return;
+          }
+        }
+
+        // 2. Headings
+        if (trimmed.startsWith('## ')) {
+          closeComponents();
+          html += `<h2>${trimmed.replace('## ', '')}</h2>`;
+          return;
+        }
+        if (trimmed.startsWith('### ')) {
+          closeComponents();
+          html += `<h3>${trimmed.replace('### ', '')}</h3>`;
+          return;
+        }
+
+        // 3. Timeline HH:mm or Plain Event in Timeline
+        const timeMatch = trimmed.match(/^[-*]?\s*(\d{1,2}:\d{2}(頃)?)/);
+        if (inTimeline && trimmed.startsWith('-') && !timeMatch && !line.startsWith('  ') && !trimmed.includes('|')) {
+          // 時刻なしのイベント（宿泊先など）も丸印を表示する (2列目と3列目を結合)
+          html += `
+            <tr class="event-row">
+              <td class="timeline-axis"></td>
+              <td class="timeline-content" colspan="2">${trimmed.replace(/^-?\s*/, '').replace(/\*\*/g, '')}</td>
+            </tr>`;
+          return;
+        }
+
+        if (timeMatch) {
+          if (!inTimeline) {
+            html += '<table class="timeline-table">';
+            inTimeline = true;
+          }
+          const desc = trimmed.replace(/^[-*]?\s*/, '').replace(timeMatch[1], '').replace(/\*\*/g, '').trim();
+          html += `
+            <tr class="event-row">
+              <td class="timeline-axis"></td>
+              <td class="timeline-time">${timeMatch[1]}</td>
+              <td class="timeline-content">${desc}</td>
+            </tr>`;
+          return;
+        }
+
+        // 4. Interval Labels (2列目と3列目を結合)
+        if (inTimeline && trimmed.includes('|')) {
+          const labelText = trimmed.split('|')[1].trim();
+          html += `
+            <tr class="interval-row">
+              <td class="timeline-axis"></td>
+              <td class="timeline-content interval-text" colspan="2">${labelText}</td>
+            </tr>`;
+          return;
+        }
+
+        // 5. Timeline Memo (Indented - ) - 独立した行として追加
+        if (inTimeline && (line.startsWith('  -') || line.startsWith('    -'))) {
+          const memoText = trimmed.replace(/^[-*]\s*/, '').replace(/\*\*/g, '');
+          html += `
+            <tr class="memo-row">
+              <td class="timeline-axis"></td>
+              <td class="timeline-time"></td>
+              <td class="timeline-content memo-text">${memoText}</td>
+            </tr>`;
+          return;
+        }
+
+        // 6. Checkboxes
+        if (trimmed.startsWith('- [ ]')) {
+          closeComponents();
+          const checkText = trimmed.replace('- [ ]', '').trim();
+          html += `<div class="check-item"><div class="sq"></div><span>${checkText}</span></div>`;
+          return;
+        }
+
+        // 7. Tips / Callouts
+        if (trimmed.startsWith('> [!TIP]')) {
+          closeComponents();
+          const tipTitle = trimmed.replace('> [!TIP]', '').trim();
+          html += `<div class="tip-box"><strong>💡 ${tipTitle || 'Tips'}</strong>`;
+          inTip = true;
+          return;
+        }
+        if (inTip && trimmed.startsWith('>')) {
+          html += trimmed.replace('>', '').replace(/\*\*/g, '') + ' ';
+          return;
+        }
+
+        // Finalize components if line doesn't match
+        if (trimmed && !trimmed.startsWith('-') && !trimmed.startsWith('>') && !trimmed.startsWith('|')) {
+          closeComponents();
+        }
+
+        if (trimmed) {
+          html += `<div>${trimmed.replace(/\*\*/g, '')}</div>`;
+        } else {
+          html += '<div style="height:0.5em"></div>';
+        }
+      });
+
+      function closeComponents() {
+        if (inTimeline) { html += '</table>'; inTimeline = false; }
+        if (inTip) { html += '</div>'; inTip = false; }
+      }
+
+      closeComponents();
+      return html;
+    }
+
+    function handleFileUpload(input) {
+      const file = input.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        document.getElementById('markdown-input').value = e.target.result;
+        updatePreview();
+      };
+      reader.readAsText(file);
+    }
+
+    function loadSample() {
+      const sample = `# スパリゾートハワイアンズ
+## 冬もハワイを味わおう
+2026.02.06 - 02.08
+Family Expedition
+
+---
+
+## 🗺️ 豆知識 (内フラップ)
+> [!TIP] 「常磐」の由来
+> 常陸（茨城）と磐城（福島）を結ぶことから名付けられました。
+
+- 福島県はいわき市にある東北のハワイです。
+
+---
+
+## 📅 Day 1 スケジュール
+### 2月6日(金)
+- 15:45 ママ自宅出発
+- 16:00 パパ退社 🏃‍♂️
+  - | 山手線 20分
+- 16:14 ママ 出発駅を出発
+- 17:53 東京駅発（特急ひたち）🚄
+  - | 特急ひたち (6駅 / 2.5h)
+  - 🍱 夕飯は車内でお弁当を楽しみます
+- 20:30 いわき駅到着
+- 🏨 いわきの宿（宿泊）
+
+---
+
+## 📅 Day 2 スケジュール
+### 2月7日(土)
+- 08:00 喫茶店「ブレイク」にて朝食 🍞
+  - サンドイッチが有名
+  - ゆっくり過ごしましょう
+  - | 徒歩 5分
+- 09:10 いわき駅から湯本駅へ
+- 09:30 ハワイアンズ 営業開始🏊‍♂️
+- 13:30 フラガールショー 💃
+- 21:30 終了・宿泊
+
+---
+
+## 🎒 持ち物リスト
+- [ ] ビーチサンダル
+- [ ] 水着
+- [ ] タオル
+- [ ] ゴーグル
+- [ ] 防水スマホケース
+
+## 🎖️ ミッション
+- こども担当：天候確認
+- パパ担当：特急券管理
+
+---
+
+## 🏠 宿泊先 & 連絡先 (裏表紙)
+- いわきの宿
+- スパリゾートハワイアンズ
+
+## 📝 メモ
+(ここに自由に書き込めます)`;
+      document.getElementById('markdown-input').value = sample;
+      updatePreview();
+    }
+
+    // 初回読み込み
+    loadSample();
+  </script>
+
+</body>
+
+</html>
