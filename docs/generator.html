@@ -55,11 +55,11 @@
 
     .preview-pane {
       flex: 1;
-      overflow-y: auto;
+      overflow: auto;
+      /* Enable both scrollbars if needed */
       padding: 40px;
       display: flex;
       flex-direction: column;
-      align-items: center;
       background: #e0e6e4;
       scroll-behavior: smooth;
     }
@@ -140,6 +140,8 @@
       background: #fff;
       display: flex;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+      margin-left: auto;
+      margin-right: auto;
       margin-bottom: 40px;
       position: relative;
       flex-shrink: 0;
