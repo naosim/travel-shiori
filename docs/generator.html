@@ -50,7 +50,9 @@
       flex-direction: column;
       padding: 20px;
       box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
-      z-index: 100;
+      z-index: 200;
+      transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      flex-shrink: 0;
     }
 
     .preview-pane {
@@ -62,6 +64,65 @@
       flex-direction: column;
       background: #e0e6e4;
       scroll-behavior: smooth;
+      position: relative;
+    }
+
+    #toggle-sidebar {
+      position: fixed;
+      left: 20px;
+      /* サイドバーのパディング(20px)に合わせる */
+      top: 20px;
+      /* サイドバーのパディング(20px)に合わせる */
+      z-index: 1000;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--accent-color);
+      color: white;
+      border: none;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      transition: all 0.3s;
+    }
+
+    #toggle-sidebar:hover {
+      transform: scale(1.1);
+    }
+
+    .ui-container.sidebar-collapsed .editor-pane {
+      margin-left: -400px;
+    }
+
+    .ui-container.sidebar-collapsed #toggle-sidebar {
+      left: 20px;
+      background: #fff;
+      color: var(--accent-color);
+      border: 1px solid #ddd;
+    }
+
+    @media (max-width: 768px) {
+      .editor-pane {
+        width: 100%;
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .ui-container.sidebar-collapsed .editor-pane {
+        margin-left: 0;
+        transform: translateX(-100%);
+      }
+
+      .preview-pane {
+        padding: 20px;
+        padding-top: 60px;
+      }
     }
 
     h1.ui-title {
@@ -71,6 +132,14 @@
       align-items: center;
       gap: 10px;
       color: var(--accent-color);
+      /* ボタンと重ならないよう、開いている時は左にスペースを空ける */
+      padding-left: 45px;
+      height: 44px;
+      /* ボタンの高さに合わせる */
+    }
+
+    .ui-container.sidebar-collapsed h1.ui-title {
+      padding-left: 0;
     }
 
     textarea#markdown-input {
@@ -470,6 +539,7 @@
 
     <!-- Live Preview Area -->
     <main class="preview-pane" id="preview-area">
+      <button id="toggle-sidebar" onclick="toggleSidebar()" title="サイドバーの表示・非表示">📌</button>
       <!-- Page 1: Outer (6, 5, 1) -->
       <div class="shiori-page" id="page-outer">
         <div class="column" id="panel-6"></div> <!-- Inner Flap -->
@@ -532,6 +602,15 @@
       if (config.subtitleSize) root.style.setProperty('--subtitle-size', config.subtitleSize);
       if (config.spacing) root.style.setProperty('--row-spacing', config.spacing);
       if (config.titleColor) root.style.setProperty('--title-color', config.titleColor);
+    }
+
+    function toggleSidebar() {
+      document.querySelector('.ui-container').classList.toggle('sidebar-collapsed');
+    }
+
+    // モバイルの場合はデフォルトで閉じる
+    if (window.innerWidth <= 768) {
+      document.querySelector('.ui-container').classList.add('sidebar-collapsed');
     }
 
     function renderMarkdown(text, isCover = false) {
