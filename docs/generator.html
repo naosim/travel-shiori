@@ -475,18 +475,16 @@
         applyConfig(config);
       } else {
         // 重複呼び出し防止のためデフォルト値をセット
-        applyConfig({ titleSize: '32pt', subtitleSize: '14pt', spacing: '8px', titleColor: '#000000' });
+        applyConfig(DEFAULT_CONFIG);
       }
 
-      const sections = text.split(/\n---\s*\n/);
-      // マッピング: 1.表紙, 2.内フラップ(P6), 3.内左(P2), 4.内中(P3), 5.内右(P4), 6.裏表紙(P5)
-      const panelMapping = [1, 6, 2, 3, 4, 5];
+      const sections = text.split(LAYOUT.SECTION_SEPARATOR);
 
-      for (let i = 0; i < 6; i++) {
-        const panelId = panelMapping[i];
+      for (let i = 0; i < LAYOUT.TOTAL_PANELS; i++) {
+        const panelId = LAYOUT.PANEL_MAPPING[i];
         const panel = document.getElementById(`panel-${panelId}`);
         const content = sections[i] || '';
-        panel.innerHTML = renderMarkdown(content.trim(), panelId === 1);
+        panel.innerHTML = renderMarkdown(content.trim(), panelId === LAYOUT.COVER_PANEL_ID);
       }
     }
 
@@ -502,8 +500,33 @@
       document.querySelector('.ui-container').classList.toggle('sidebar-collapsed');
     }
 
+    // レスポンシブブレークポイント定義
+    const BREAKPOINTS = {
+      MOBILE_TO_TABLET: 768 // px - モバイル/タブレット分岐点
+    };
+
+    // パネル・レイアウト設定
+    const LAYOUT = {
+      TOTAL_PANELS: 6,  // 三つ折り = 6パネル
+      COVER_PANEL_ID: 1,  // 表紙パネル
+      // Markdown 内の順番 (index) → 表示パネルID (value) へのマッピング
+      // セクション1(表紙) → パネル1(右外面)
+      // セクション2(内フラップ) → パネル6(左外面)
+      // セクション3(内左) → パネル2  etc...
+      PANEL_MAPPING: [1, 6, 2, 3, 4, 5],
+      SECTION_SEPARATOR: /\n---\s*\n/  // Markdown セクション区切り
+    };
+
+    // デフォルト設定値
+    const DEFAULT_CONFIG = {
+      titleSize: '32pt',
+      subtitleSize: '14pt',
+      spacing: '8px',
+      titleColor: '#000000'
+    };
+
     // モバイルの場合はデフォルトで閉じる
-    if (window.innerWidth <= 768) {
+    if (window.innerWidth <= BREAKPOINTS.MOBILE_TO_TABLET) {
       document.querySelector('.ui-container').classList.add('sidebar-collapsed');
     }
 
