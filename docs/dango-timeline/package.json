@@ -1,0 +1,41 @@
+{
+  "name": "dango-timeline",
+  "version": "0.1.0",
+  "description": "🍡 Markdown駆動のシンプルで美しいタイムラインコンポーネント。団子のようにつながった丸と線で時系列を表現。",
+  "keywords": [
+    "timeline",
+    "markdown",
+    "schedule",
+    "dango",
+    "itinerary",
+    "日本語"
+  ],
+  "type": "module",
+  "main": "src/index.js",
+  "browser": "dist/dango-timeline.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./dist": "./dist/dango-timeline.js",
+    "./styles": "./src/styles.css",
+    "./parser": "./src/parser.js",
+    "./renderer": "./src/renderer.js"
+  },
+  "files": [
+    "src/"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/naosim/travel-shiori/tree/main/dango-timeline"
+  },
+  "author": "naosim",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "scripts": {
+    "test": "node --test",
+    "build": "echo 'No build required for ES modules'",
+    "prepublishOnly": "npm test"
+  },
+  "devDependencies": {}
+}

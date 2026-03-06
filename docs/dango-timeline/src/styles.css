@@ -1,0 +1,138 @@
+/**
+ * dango-timeline Styles
+ * タイムラインコンポーネント用CSS
+ * 印刷対応・カスタマイズ可能なデザイン
+ */
+
+:root {
+  --dango-row-spacing: 8px;
+  --dango-time-width: 55px;
+  --dango-axis-width: 25px;
+  --dango-line-width: 1.5pt;
+  --dango-dot-size: 9px;
+  --dango-line-color: #000;
+  --dango-bg-adjust: exact;
+}
+
+.dango-timeline {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 10px 0;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/** タイムライン軸（縦線） **/
+.dango-axis {
+  width: var(--dango-axis-width);
+  position: relative;
+  padding: 0;
+  vertical-align: middle;
+}
+
+/* 縦線の描画 */
+.dango-axis::before {
+  content: '';
+  position: absolute;
+  right: calc(var(--dango-line-width) * -0.5);
+  top: 0;
+  bottom: 0;
+  width: var(--dango-line-width);
+  background: var(--dango-line-color);
+  z-index: 1;
+}
+
+/* 最初の行：中央から下だけに線を出す */
+.dango-timeline tr:first-child .dango-axis::before {
+  top: 56%;
+}
+
+/* 最後の行：上から中央までで線を止める */
+.dango-timeline tr:last-child .dango-axis::before {
+  bottom: 44%;
+}
+
+/* イベント行の丸印 */
+.dango-event-row .dango-axis::after {
+  content: '';
+  position: absolute;
+  right: calc(var(--dango-line-width) * -0.5);
+  top: 56%;
+  width: var(--dango-dot-size);
+  height: var(--dango-dot-size);
+  background: #fff;
+  border: var(--dango-line-width) solid var(--dango-line-color);
+  border-radius: 50%;
+  transform: translate(50%, -50%);
+  z-index: 2;
+}
+
+/** 時刻カラム **/
+.dango-time {
+  width: var(--dango-time-width);
+  padding: var(--dango-row-spacing) 5px var(--dango-row-spacing) 10px;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  font-size: 10.5pt;
+  vertical-align: top;
+  white-space: nowrap;
+  line-height: 1.4;
+}
+
+/** コンテンツカラム **/
+.dango-content {
+  padding: var(--dango-row-spacing) 0 var(--dango-row-spacing) 10px;
+  vertical-align: top;
+  text-align: left;
+  font-size: 9.5pt;
+  line-height: 1.4;
+}
+
+/** メモ行の調整 **/
+.dango-memo-row .dango-content {
+  padding-top: 0;
+  padding-bottom: 3px;
+}
+
+.dango-memo-row .dango-time {
+  padding-top: 0;
+  padding-bottom: 3px;
+}
+
+.dango-memo-text {
+  font-size: 8.5pt;
+  color: #444;
+  display: block;
+}
+
+/** インターバルテキスト（移動手段の説明） **/
+.dango-interval-text {
+  font-size: 8pt;
+  color: #333;
+  padding: 4px 0 4px 15px;
+  position: relative;
+}
+
+.dango-interval-text::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 10px;
+  height: 0.5pt;
+  background: #999;
+}
+
+/** 時刻なしイベント行 **/
+.dango-event-row.dango-no-time .dango-content {
+  font-weight: 500;
+}
+
+/** 印刷用の調整 **/
+@media print {
+  .dango-timeline {
+    break-inside: avoid;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

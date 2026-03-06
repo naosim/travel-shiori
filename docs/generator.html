@@ -8,6 +8,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&family=Noto+Sans+JP:wght@400;500;700&display=swap"
     rel="stylesheet">
+  <script src="./dango-timeline/dist/dango-timeline.js"></script>
   <style>
     :root {
       --paper-width: 297mm;
@@ -291,115 +292,7 @@
       margin: 20px 0;
     }
 
-    /* Timeline Table Component */
-    .timeline-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 10px 0;
-    }
-
-    .timeline-axis {
-      width: 25px;
-      /* border-right は廃止し、疑似要素で線を引く */
-      position: relative;
-      padding: 0;
-      vertical-align: middle;
-    }
-
-    /* 垂直線の描画 */
-    .timeline-axis::before {
-      content: '';
-      position: absolute;
-      right: -0.75pt;
-      top: 0;
-      bottom: 0;
-      width: 1.5pt;
-      background: #000;
-      z-index: 1;
-    }
-
-    /* 1行目は丸（中央）から下だけに線を出す */
-    .timeline-table tr:first-child .timeline-axis::before {
-      top: 56%;
-      /* イベントの丸印のtopと合わせる */
-    }
-
-    /* 最終行は上から丸（中央）までで線を止める */
-    .timeline-table tr:last-child .timeline-axis::before {
-      bottom: 44%;
-      /* 100% - 56% = 44% */
-    }
-
-    /* イベントの丸印 */
-    .event-row .timeline-axis::after {
-      content: '';
-      position: absolute;
-      right: -0.75pt;
-      /* 境界線の真上に配置 (太さ1.5ptの半分) */
-      top: 56%;
-      width: 9px;
-      height: 9px;
-      background: #fff;
-      border: 1.5pt solid #000;
-      border-radius: 50%;
-      transform: translate(50%, -50%);
-      /* 中心を軸にぴったり合わせる */
-      z-index: 2;
-    }
-
-    .timeline-time {
-      width: 55px;
-      /* 時刻カラムの幅を固定 */
-      padding: var(--row-spacing) 5px var(--row-spacing) 10px;
-      font-family: 'Outfit';
-      font-weight: 700;
-      font-size: 10.5pt;
-      vertical-align: top;
-      white-space: nowrap;
-      line-height: 1.4;
-    }
-
-    .timeline-content {
-      padding: var(--row-spacing) 0 var(--row-spacing) 10px;
-      vertical-align: top;
-      text-align: left;
-      font-size: 9.5pt;
-      line-height: 1.4;
-    }
-
-    /* メモ行（ネスト項目）は行間をさらに詰める */
-    .memo-row .timeline-content {
-      padding-top: 0;
-      padding-bottom: 3px;
-    }
-
-    .memo-row .timeline-time {
-      padding-top: 0;
-      padding-bottom: 3px;
-    }
-
-    .memo-text {
-      font-size: 8.5pt;
-      color: #444;
-      display: block;
-    }
-
-    .interval-text {
-      font-size: 8pt;
-      color: #333;
-      padding: 4px 0 4px 15px;
-      position: relative;
-    }
-
-    .interval-text::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 50%;
-      width: 10px;
-      height: 0.5pt;
-      background: #000;
-    }
+    /* Timeline Table Component - dango-timeline (use DangoTimeline.injectStyles()) */
 
     /* Checkbox Component */
     .check-item {
@@ -619,8 +512,17 @@
 
       const lines = text.split('\n');
       let html = '';
-      let inTimeline = false;
       let inTip = false;
+      let timelineBuffer = '';
+      let inTimeline = false;
+
+      const flushTimelineBuffer = () => {
+        if (timelineBuffer.trim()) {
+          html += DangoTimeline.render(timelineBuffer.trim());
+          timelineBuffer = '';
+          inTimeline = false;
+        }
+      };
 
       lines.forEach((line, index) => {
         const trimmed = line.trim();
@@ -643,78 +545,20 @@
         }
 
         // 2. Headings
-        if (trimmed.startsWith('## ')) {
-          closeComponents();
-          html += `<h2>${trimmed.replace('## ', '')}</h2>`;
-          return;
-        }
-        if (trimmed.startsWith('### ')) {
-          closeComponents();
-          html += `<h3>${trimmed.replace('### ', '')}</h3>`;
-          return;
-        }
-
-        // 3. Timeline HH:mm or Plain Event in Timeline
-        const timeMatch = trimmed.match(/^[-*]?\s*(\d{1,2}:\d{2}(頃)?)/);
-        if (inTimeline && trimmed.startsWith('-') && !timeMatch && !line.startsWith('  ') && !trimmed.includes('|')) {
-          // 時刻なしのイベント（宿泊先など）も丸印を表示する (2列目と3列目を結合)
-          html += `
-            <tr class="event-row">
-              <td class="timeline-axis"></td>
-              <td class="timeline-content" colspan="2">${trimmed.replace(/^-?\s*/, '').replace(/\*\*/g, '')}</td>
-            </tr>`;
-          return;
-        }
-
-        if (timeMatch) {
-          if (!inTimeline) {
-            html += '<table class="timeline-table">';
-            inTimeline = true;
+        if (trimmed.startsWith('## ') || trimmed.startsWith('### ')) {
+          flushTimelineBuffer();
+          if (trimmed.startsWith('## ')) {
+            html += `<h2>${trimmed.replace('## ', '')}</h2>`;
+          } else {
+            html += `<h3>${trimmed.replace('### ', '')}</h3>`;
           }
-          const desc = trimmed.replace(/^[-*]?\s*/, '').replace(timeMatch[1], '').replace(/\*\*/g, '').trim();
-          html += `
-            <tr class="event-row">
-              <td class="timeline-axis"></td>
-              <td class="timeline-time">${timeMatch[1]}</td>
-              <td class="timeline-content">${desc}</td>
-            </tr>`;
+          inTip = false;
           return;
         }
 
-        // 4. Interval Labels (2列目と3列目を結合)
-        if (inTimeline && trimmed.includes('|')) {
-          const labelText = trimmed.split('|')[1].trim();
-          html += `
-            <tr class="interval-row">
-              <td class="timeline-axis"></td>
-              <td class="timeline-content interval-text" colspan="2">${labelText}</td>
-            </tr>`;
-          return;
-        }
-
-        // 5. Timeline Memo (Indented - ) - 独立した行として追加
-        if (inTimeline && (line.startsWith('  -') || line.startsWith('    -'))) {
-          const memoText = trimmed.replace(/^[-*]\s*/, '').replace(/\*\*/g, '');
-          html += `
-            <tr class="memo-row">
-              <td class="timeline-axis"></td>
-              <td class="timeline-time"></td>
-              <td class="timeline-content memo-text">${memoText}</td>
-            </tr>`;
-          return;
-        }
-
-        // 6. Checkboxes
-        if (trimmed.startsWith('- [ ]')) {
-          closeComponents();
-          const checkText = trimmed.replace('- [ ]', '').trim();
-          html += `<div class="check-item"><div class="sq"></div><span>${checkText}</span></div>`;
-          return;
-        }
-
-        // 7. Tips / Callouts
+        // 3. Tips / Callouts (タイムラインより優先)
         if (trimmed.startsWith('> [!TIP]')) {
-          closeComponents();
+          flushTimelineBuffer();
           const tipTitle = trimmed.replace('> [!TIP]', '').trim();
           html += `<div class="tip-box"><strong>💡 ${tipTitle || 'Tips'}</strong>`;
           inTip = true;
@@ -725,9 +569,28 @@
           return;
         }
 
-        // Finalize components if line doesn't match
+        // 4. Checkboxes
+        if (trimmed.startsWith('- [ ]')) {
+          flushTimelineBuffer();
+          inTip = false;
+          const checkText = trimmed.replace('- [ ]', '').trim();
+          html += `<div class="check-item"><div class="sq"></div><span>${checkText}</span></div>`;
+          return;
+        }
+
+        // 5. Timeline Detection (DangoTimeline で処理)
+        const timeMatch = trimmed.match(/^[-*]?\s*(\d{1,2}:\d{2}(頃)?)/);
+        if (timeMatch || (inTimeline && (trimmed.startsWith('-') || trimmed.startsWith('  -') || trimmed.includes('|')))) {
+          inTip = false;
+          inTimeline = true;
+          timelineBuffer += line + '\n';
+          return;
+        }
+
+        // 6. Finalize components if non-timeline content
         if (trimmed && !trimmed.startsWith('-') && !trimmed.startsWith('>') && !trimmed.startsWith('|')) {
-          closeComponents();
+          flushTimelineBuffer();
+          inTip = false;
         }
 
         if (trimmed) {
@@ -737,12 +600,12 @@
         }
       });
 
-      function closeComponents() {
-        if (inTimeline) { html += '</table>'; inTimeline = false; }
-        if (inTip) { html += '</div>'; inTip = false; }
-      }
+      // 最後のタイムラインバッファをフラッシュ
+      flushTimelineBuffer();
 
-      closeComponents();
+      // 最後のTip をクローズ
+      if (inTip) { html += '</div>'; }
+
       return html;
     }
 
@@ -824,6 +687,7 @@ Family Expedition
     }
 
     // 初回読み込み
+    DangoTimeline.injectStyles();
     loadSample();
   </script>
 
